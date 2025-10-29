@@ -6,16 +6,16 @@ import threading
 
 app = Flask(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # Укажи в Render → Environment → BOT_TOKEN
 
-# Отправка сообщения пользователю
 def send_message(chat_id, text):
+    """Отправка текста пользователю в Telegram"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     requests.post(url, json=payload)
 
-# Динамическая последовательность
 def send_dynamic(chat_id):
+    """Динамическая анимация сообщений"""
     steps = [
         "🧠 Подключение к системе... (10%)",
         "⚙️ Анализ аккаунта... (25%)",
@@ -34,18 +34,14 @@ def home():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json(force=True)
-    print("Получен апдейт:", data)
+    print("Получен запрос:", data)
 
-    # Проверяем, есть ли chat_id
-    chat_id = None
-    if "message" in data:
-        chat_id = data["message"]["chat"]["id"]
-    elif "callback_query" in data:  # если кнопка
-        chat_id = data["callback_query"]["message"]["chat"]["id"]
+    # Извлекаем chat_id из тела запроса
+    chat_id = data.get("chat_id")
 
     if chat_id:
-        threading.Thread(target=send_dynamic, args=(chat_id,)).start()
-        return jsonify({"ok": True})
+        threading.Thread(target=send_dynamic, args=(chat_id,), daemon=True).start()
+        return jsonify({"ok": True, "status": "dynamic message sent"}), 200
     else:
         return jsonify({"ok": False, "error": "chat_id not found"}), 400
 
