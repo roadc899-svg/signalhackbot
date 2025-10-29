@@ -6,7 +6,7 @@ import threading
 
 app = Flask(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # Укажи в Render → Environment → BOT_TOKEN
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 def send_message(chat_id, text):
     """Отправка текста пользователю в Telegram"""
@@ -36,14 +36,14 @@ def webhook():
     data = request.get_json(force=True)
     print("Получен запрос:", data)
 
-    # Извлекаем chat_id из тела запроса
-    chat_id = data.get("chat_id")
+    chat_id = str(data.get("chat_id", "")).replace("{", "").replace("}", "").strip()
 
-    if chat_id:
-        threading.Thread(target=send_dynamic, args=(chat_id,), daemon=True).start()
+    if chat_id.isdigit():
+        threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
         return jsonify({"ok": True, "status": "dynamic message sent"}), 200
     else:
-        return jsonify({"ok": False, "error": "chat_id not found"}), 400
+        print("Ошибка chat_id:", chat_id)
+        return jsonify({"ok": False, "error": f"invalid chat_id: {chat_id}"}), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
