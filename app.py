@@ -20,22 +20,30 @@ def make_progress_bar(percent: int, length: int = 20) -> str:
     return f"[{'█' * filled}{'▒' * empty}] {percent}%"
 
 # ================================
-# 🔰 Отправка сообщения
+# 🔰 Отправка и обновление сообщений
 # ================================
 def send_message(chat_id, text):
-    """Отправка текста пользователю в Telegram"""
+    """Отправка нового сообщения"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
-    try:
-        requests.post(url, json=payload, timeout=10)
-    except Exception as e:
-        print("Ошибка отправки:", e)
+    r = requests.post(url, json=payload)
+    return r.json().get("result", {}).get("message_id")
+
+def edit_message(chat_id, message_id, text):
+    """Редактирование существующего сообщения"""
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/editMessageText"
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "text": text,
+        "parse_mode": "HTML"
+    }
+    requests.post(url, json=payload)
 
 # ================================
-# 🔰 Эмуляция загрузки (анимация)
+# 🔰 Анимация установки
 # ================================
 def send_dynamic(chat_id):
-    """Пошаговая динамическая загрузка"""
     steps = [
         ("🧠 Подключение к системе...", 10),
         ("⚙️ Проверка регистрации...", 25),
@@ -44,16 +52,22 @@ def send_dynamic(chat_id):
         ("✅ Доступ к HackBot открыт!", 100)
     ]
 
-    for text, pct in steps:
-        bar = make_progress_bar(pct)
-        send_message(chat_id, f"{text}\n{bar}")
-        time.sleep(1.2)  # пауза между шагами
+    # отправляем первое сообщение
+    first_step, pct = steps[0]
+    bar = make_progress_bar(pct)
+    message_id = send_message(chat_id, f"{first_step}\n{bar}")
 
-    # здесь можно вызвать следующий webhook в Chatterfy (если нужно):
-    # requests.post("https://api.chatterfy.io/.../webhook", json={"chat_id": chat_id})
+    # редактируем его дальше
+    for text, pct in steps[1:]:
+        time.sleep(1.2)
+        bar = make_progress_bar(pct)
+        edit_message(chat_id, message_id, f"{text}\n{bar}")
+
+    # 👇 если нужно вызвать Chatterfy Webhook после завершения (например, следующий блок)
+    # requests.post("https://chatterfy.io/.../webhook", json={"chat_id": chat_id})
 
 # ================================
-# 🔰 Главная и Webhook
+# 🔰 Flask маршруты
 # ================================
 @app.route("/", methods=["GET"])
 def home():
@@ -69,7 +83,7 @@ def webhook():
 
     if chat_id.isdigit():
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
-        return jsonify({"ok": True, "status": "dynamic message started"}), 200
+        return jsonify({"ok": True, "status": "edit progress started"}), 200
     else:
         print("Ошибка chat_id:", chat_id)
         return jsonify({"ok": False, "error": f"invalid chat_id: {chat_id}"}), 400
