@@ -1,2 +1,6 @@
-# signalhackbot
-Webhook + Telegram bot for HackBot dynamic messages (Render + Chatterfy integration)
+# SignalHackBot
+
+Webhook-сервис для Chatterfy на Flask, который возвращает динамические сообщения вида:
+“💣 Сканирование мин...” и т.д.
+
+Развёрнут через Render (Python + Gunicorn).
