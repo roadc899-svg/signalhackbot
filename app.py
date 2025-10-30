@@ -3,6 +3,7 @@ import os
 import requests
 import time
 import threading
+import random
 
 app = Flask(__name__)
 
@@ -49,7 +50,7 @@ def send_dynamic(chat_id):
         ("🔍 Анализ расположения мин...", 25),
         ("🧠 Обработка данных...", 50),
         ("🛠️ Подготовка и оптимизация сигнала...", 75),
-        ("✅ Сигнал готов — вероятность успеха: 92.4%", 100)
+        ("✅ Сигнал готов", 100)
     ]
 
     # отправляем первое сообщение
@@ -61,10 +62,12 @@ def send_dynamic(chat_id):
     for text, pct in steps[1:]:
         time.sleep(1.2)
         bar = make_progress_bar(pct)
-        edit_message(chat_id, message_id, f"{text}\n{bar}")
-
-    # 👇 если нужно вызвать Chatterfy Webhook после завершения (например, следующий блок)
-    # requests.post("https://chatterfy.io/.../webhook", json={"chat_id": chat_id})
+        # на последнем шаге убираем прогресс-бар и добавляем случайный процент
+        if pct == 100:
+            success = round(random.uniform(85.0, 95.0), 1)
+            edit_message(chat_id, message_id, f"✅ Сигнал готов — вероятность успеха: {success}%")
+        else:
+            edit_message(chat_id, message_id, f"{text}\n{bar}")
 
 # ================================
 # 🔰 Flask маршруты
@@ -72,7 +75,6 @@ def send_dynamic(chat_id):
 @app.route("/", methods=["GET"])
 def home():
     return "OK", 200
-
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -87,7 +89,6 @@ def webhook():
     else:
         print("Ошибка chat_id:", chat_id)
         return jsonify({"ok": False, "error": f"invalid chat_id: {chat_id}"}), 400
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
