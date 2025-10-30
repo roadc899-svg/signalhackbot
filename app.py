@@ -8,12 +8,12 @@ import random
 app = Flask(__name__)
 
 # ================================
-# 🔰 Токен Telegram
+# 🔰 Token de Telegram
 # ================================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # ================================
-# 🔰 Генератор прогресс-бара
+# 🔰 Generador de barra de progreso
 # ================================
 def make_progress_bar(percent: int, length: int = 20) -> str:
     filled = int(length * percent / 100)
@@ -21,17 +21,17 @@ def make_progress_bar(percent: int, length: int = 20) -> str:
     return f"[{'█' * filled}{'▒' * empty}] {percent}%"
 
 # ================================
-# 🔰 Отправка и обновление сообщений
+# 🔰 Envío y edición de mensajes
 # ================================
 def send_message(chat_id, text):
-    """Отправка нового сообщения"""
+    """Envía un nuevo mensaje"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     r = requests.post(url, json=payload)
     return r.json().get("result", {}).get("message_id")
 
 def edit_message(chat_id, message_id, text):
-    """Редактирование существующего сообщения"""
+    """Edita un mensaje existente"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/editMessageText"
     payload = {
         "chat_id": chat_id,
@@ -42,35 +42,34 @@ def edit_message(chat_id, message_id, text):
     requests.post(url, json=payload)
 
 # ================================
-# 🔰 Анимация установки
+# 🔰 Animación de carga (15 segundos)
 # ================================
 def send_dynamic(chat_id):
     steps = [
-        ("⚙️ Подключение к системе 1xBet...", 10),
-        ("🔍 Анализ расположения мин...", 25),
-        ("🧠 Обработка данных...", 50),
-        ("🛠️ Подготовка и оптимизация сигнала...", 75),
-        ("✅ Сигнал готов", 100)
+        ("⚙️ Conectando al sistema 1xBet...", 10),
+        ("🔍 Analizando el patrón de minas...", 25),
+        ("🧠 Procesando los datos del servidor...", 50),
+        ("🛠️ Preparando y optimizando la señal...", 75),
+        ("✅ Señal lista", 100)
     ]
 
-    # отправляем первое сообщение
+    # enviar primer mensaje
     first_step, pct = steps[0]
     bar = make_progress_bar(pct)
     message_id = send_message(chat_id, f"{first_step}\n{bar}")
 
-    # редактируем его дальше
+    # actualizar el mensaje dinámicamente
     for text, pct in steps[1:]:
-        time.sleep(1.2)
+        time.sleep(3)  # ⏳ cada paso dura 3 segundos
         bar = make_progress_bar(pct)
-        # на последнем шаге убираем прогресс-бар и добавляем случайный процент
         if pct == 100:
             success = round(random.uniform(85.0, 95.0), 1)
-            edit_message(chat_id, message_id, f"✅ Сигнал готов — вероятность успеха: {success}%")
+            edit_message(chat_id, message_id, f"✅ Señal lista — probabilidad de éxito: {success}%")
         else:
             edit_message(chat_id, message_id, f"{text}\n{bar}")
 
 # ================================
-# 🔰 Flask маршруты
+# 🔰 Rutas Flask
 # ================================
 @app.route("/", methods=["GET"])
 def home():
@@ -79,16 +78,16 @@ def home():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json(force=True)
-    print("Получен запрос:", data)
+    print("Solicitud recibida:", data)
 
     chat_id = str(data.get("chat_id", "")).replace("{", "").replace("}", "").strip()
 
     if chat_id.isdigit():
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
-        return jsonify({"ok": True, "status": "edit progress started"}), 200
+        return jsonify({"ok": True, "status": "progreso iniciado"}), 200
     else:
-        print("Ошибка chat_id:", chat_id)
-        return jsonify({"ok": False, "error": f"invalid chat_id: {chat_id}"}), 400
+        print("Error en chat_id:", chat_id)
+        return jsonify({"ok": False, "error": f"chat_id inválido: {chat_id}"}), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
