@@ -78,15 +78,13 @@ def webhook():
 
     chat_id = None
 
-    # 📌 Extract chat_id correctly from SendPulse
-    if "subscriber" in data and "chat_id" in data["subscriber"]:
-        chat_id = data["subscriber"]["chat_id"]
+    # 📌 Correct path for SendPulse → contact.chat_id
+    if "contact" in data and "chat_id" in data["contact"]:
+        chat_id = data["contact"]["chat_id"]
 
-    # Validate chat_id
     if chat_id and str(chat_id).isdigit():
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
         return jsonify({"ok": True, "status": "progreso iniciado"}), 200
-
     else:
         print("Error en chat_id:", chat_id)
         return jsonify({"ok": False, "error": f"chat_id inválido: {chat_id}"}), 400
