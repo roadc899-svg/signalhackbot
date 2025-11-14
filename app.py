@@ -74,27 +74,13 @@ def send_dynamic(chat_id):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json(force=True)
-    print("Solicitud recibida:", data)
+    print("RAW JSON:", data)
 
-    # SendPulse отправляет массив [{}]
-    if isinstance(data, list) and len(data) > 0:
-        event = data[0]
-    else:
-        event = data
-
-    chat_id = None
-
-    # 👉 100% правильный путь к chat_id
-    if "chat_id" in event:
-        chat_id = event["chat_id"]
-    elif "telegram_id" in event:
-        chat_id = event["telegram_id"]
-
+    chat_id = extract_chat_id(data)
     print("CHAT ID DETECTADO:", chat_id)
 
-    if chat_id and str(chat_id).isdigit():
+    if chat_id:
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
-        return jsonify({"ok": True, "status": "started"}), 200
-    else:
-        print("❌ Error en chat_id:", chat_id)
-        return jsonify({"ok": False, "error": f"chat_id inválido: {chat_id}"}), 400
+        return jsonify({"ok": True}), 200
+
+    return jsonify({"ok": False, "error": "chat_id not found"}), 400
