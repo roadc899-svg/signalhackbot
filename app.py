@@ -71,23 +71,22 @@ def send_dynamic(chat_id):
 # ================================
 # 🔰 Rutas Flask
 # ================================
-@app.route("/", methods=["GET"])
-def home():
-    return "OK", 200
-
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json(force=True)
     print("Solicitud recibida:", data)
 
-    chat_id = str(data.get("chat_id", "")).replace("{", "").replace("}", "").strip()
+    chat_id = None
 
-    if chat_id.isdigit():
+    # 📌 Extract chat_id correctly from SendPulse
+    if "subscriber" in data and "chat_id" in data["subscriber"]:
+        chat_id = data["subscriber"]["chat_id"]
+
+    # Validate chat_id
+    if chat_id and str(chat_id).isdigit():
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
         return jsonify({"ok": True, "status": "progreso iniciado"}), 200
+
     else:
         print("Error en chat_id:", chat_id)
         return jsonify({"ok": False, "error": f"chat_id inválido: {chat_id}"}), 400
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
