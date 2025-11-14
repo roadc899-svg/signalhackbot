@@ -13,25 +13,56 @@ app = Flask(__name__)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # ================================
-# 🔰 Generador de barra de progreso
+# 🔰 Функция для поиска chat_id в любом JSON
+# ================================
+def extract_chat_id(payload):
+    """Recursively search for chat_id in JSON structure"""
+
+    # Если список
+    if isinstance(payload, list):
+        for item in payload:
+            cid = extract_chat_id(item)
+            if cid:
+                return cid
+        return None
+
+    # Если словарь
+    if isinstance(payload, dict):
+
+        # Прямые ключи
+        for key in ["chat_id", "telegram_id"]:
+            if key in payload and str(payload[key]).isdigit():
+                return payload[key]
+
+        # Рекурсивный обход
+        for key, value in payload.items():
+            cid = extract_chat_id(value)
+            if cid:
+                return cid
+
+    return None
+
+
+# ================================
+# 🔰 Генератор прогресс-бара
 # ================================
 def make_progress_bar(percent: int, length: int = 20) -> str:
     filled = int(length * percent / 100)
     empty = length - filled
     return f"[{'█' * filled}{'▒' * empty}] {percent}%"
 
+
 # ================================
-# 🔰 Envío y edición de mensajes
+# 🔰 Отправка + редактирование сообщений
 # ================================
 def send_message(chat_id, text):
-    """Envía un nuevo mensaje"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     r = requests.post(url, json=payload)
     return r.json().get("result", {}).get("message_id")
 
+
 def edit_message(chat_id, message_id, text):
-    """Edita un mensaje existente"""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/editMessageText"
     payload = {
         "chat_id": chat_id,
@@ -41,8 +72,9 @@ def edit_message(chat_id, message_id, text):
     }
     requests.post(url, json=payload)
 
+
 # ================================
-# 🔰 Animación de carga (15 segundos)
+# 🔰 Анимация загрузки
 # ================================
 def send_dynamic(chat_id):
     steps = [
@@ -53,14 +85,12 @@ def send_dynamic(chat_id):
         ("✅ Señal lista", 100)
     ]
 
-    # enviar primer mensaje
     first_step, pct = steps[0]
     bar = make_progress_bar(pct)
     message_id = send_message(chat_id, f"{first_step}\n{bar}")
 
-    # actualizar el mensaje dinámicamente
     for text, pct in steps[1:]:
-        time.sleep(3)  # ⏳ cada paso dura 3 segundos
+        time.sleep(3)
         bar = make_progress_bar(pct)
         if pct == 100:
             success = round(random.uniform(85.0, 95.0), 1)
@@ -68,8 +98,9 @@ def send_dynamic(chat_id):
         else:
             edit_message(chat_id, message_id, f"{text}\n{bar}")
 
+
 # ================================
-# 🔰 Rutas Flask
+# 🔰 Webhook
 # ================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -85,3 +116,14 @@ def webhook():
 
     return jsonify({"ok": False, "error": "chat_id not found"}), 400
 
+
+# ================================
+# 🔰 Home
+# ================================
+@app.route("/", methods=["GET"])
+def home():
+    return "HackBot is running", 200
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
