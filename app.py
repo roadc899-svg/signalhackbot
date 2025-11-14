@@ -76,21 +76,24 @@ def webhook():
     data = request.get_json(force=True)
     print("Solicitud recibida:", data)
 
-    # SendPulse sometimes sends list of events
+    # Если SendPulse прислал массив — достаем первый объект
     if isinstance(data, list) and len(data) > 0:
         event = data[0]
     else:
         event = data
 
     chat_id = None
-    
-    # Extract chat_id path for SendPulse
-    if "contact" in event and "chat_id" in event["contact"]:
-        chat_id = event["contact"]["chat_id"]
 
+    # 🟢 Правильный путь для SendPulse webhook:
+    if "chat_id" in event:
+        chat_id = event["chat_id"]
+    elif "telegram_id" in event:
+        chat_id = event["telegram_id"]
+
+    # Проверка chat_id
     if chat_id and str(chat_id).isdigit():
         threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
-        return jsonify({"ok": True, "status": "progreso iniciado"}), 200
+        return jsonify({"ok": True}), 200
     else:
         print("❌ Error en chat_id:", chat_id)
         return jsonify({"ok": False, "error": f"chat_id inválido: {chat_id}"}), 400
