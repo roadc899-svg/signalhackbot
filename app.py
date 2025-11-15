@@ -69,6 +69,16 @@ def make_progress_bar(percent, length=20):
 
 
 # ================================
+# 🗑 Функция авто-удаления финального сообщения
+# ================================
+def delete_after(chat_id, message_id, delay):
+    def worker():
+        time.sleep(delay)
+        delete_message(chat_id, message_id)
+    threading.Thread(target=worker, daemon=True).start()
+
+
+# ================================
 # 🔥 ДИНАМИЧЕСКИЕ СООБЩЕНИЯ ДЛЯ ИГР
 # ================================
 
@@ -95,6 +105,10 @@ def send_dynamic_mines(chat_id):
         if pct == 100:
             success = round(random.uniform(85, 95), 1)
             edit_message(chat_id, msg_id, f"💣 Señal lista — éxito: {success}%")
+
+            # 🔥 удалить итоговое сообщение через 10 сек
+            delete_after(chat_id, msg_id, 10)
+
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
@@ -121,6 +135,10 @@ def send_dynamic_chicken(chat_id):
         time.sleep(2)
         if pct == 100:
             edit_message(chat_id, msg_id, "🐔 Señal lista — evita las zonas calientes 🔥")
+
+            # 🔥 удалить через 10 секунд
+            delete_after(chat_id, msg_id, 10)
+
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
@@ -146,6 +164,10 @@ def send_dynamic_penalty(chat_id):
         time.sleep(2.5)
         if pct == 100:
             edit_message(chat_id, msg_id, "⚽ Señal lista — ¡dispara y marca gol! 🏆")
+
+            # 🔥 удалить финальное через 10 сек
+            delete_after(chat_id, msg_id, 10)
+
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
@@ -172,6 +194,10 @@ def send_dynamic_aviator(chat_id):
         if pct == 100:
             x = round(random.uniform(1.5, 3.8), 2)
             edit_message(chat_id, msg_id, f"✈️ Señal lista — retírate en X{x} 🚀")
+
+            # 🔥 удалить сигнал через 10 сек
+            delete_after(chat_id, msg_id, 10)
+
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
