@@ -13,7 +13,13 @@ app = Flask(__name__)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # ================================
-# 🔰 Функция для поиска chat_id в любом JSON
+# 🔰 Хранение ID последнего сообщения
+# ================================
+last_messages = {}   # { chat_id: message_id }
+
+
+# ================================
+# 🔰 Функция для поиска chat_id в JSON
 # ================================
 def extract_chat_id(payload):
     """Recursively search for chat_id in JSON structure"""
@@ -34,7 +40,7 @@ def extract_chat_id(payload):
             if key in payload and str(payload[key]).isdigit():
                 return payload[key]
 
-        # Рекурсивный обход
+        # Ищем внутри
         for key, value in payload.items():
             cid = extract_chat_id(value)
             if cid:
@@ -44,16 +50,7 @@ def extract_chat_id(payload):
 
 
 # ================================
-# 🔰 Генератор прогресс-бара
-# ================================
-def make_progress_bar(percent: int, length: int = 20) -> str:
-    filled = int(length * percent / 100)
-    empty = length - filled
-    return f"[{'█' * filled}{'▒' * empty}] {percent}%"
-
-
-# ================================
-# 🔰 Отправка + редактирование сообщений
+# 🔰 Telegram: отправка сообщения
 # ================================
 def send_message(chat_id, text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -62,6 +59,9 @@ def send_message(chat_id, text):
     return r.json().get("result", {}).get("message_id")
 
 
+# ================================
+# 🔰 Telegram: редактирование сообщения
+# ================================
 def edit_message(chat_id, message_id, text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/editMessageText"
     payload = {
@@ -74,9 +74,35 @@ def edit_message(chat_id, message_id, text):
 
 
 # ================================
-# 🔰 Анимация загрузки
+# 🔰 Telegram: удаление сообщения
+# ================================
+def delete_message(chat_id, message_id):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/deleteMessage"
+    payload = {"chat_id": chat_id, "message_id": message_id}
+    requests.post(url, json=payload)
+
+
+# ================================
+# 🔰 Генератор прогресс-бара
+# ================================
+def make_progress_bar(percent: int, length: int = 20) -> str:
+    filled = int(length * percent / 100)
+    empty = length - filled
+    return f"[{'█' * filled}{'▒' * empty}] {percent}%"
+
+
+# ================================
+# 🔰 Анимация загрузки + автоудаление прошлого сообщения
 # ================================
 def send_dynamic(chat_id):
+
+    # Удаляем предыдущее сообщение, если было
+    if chat_id in last_messages:
+        try:
+            delete_message(chat_id, last_messages[chat_id])
+        except Exception as e:
+            print("Error deleting previous message:", e)
+
     steps = [
         ("⚙️ Conectando al sistema 1xBet...", 10),
         ("🔍 Analizando el patrón de minas...", 25),
@@ -85,22 +111,29 @@ def send_dynamic(chat_id):
         ("✅ Señal lista", 100)
     ]
 
+    # Отправляем первое сообщение
     first_step, pct = steps[0]
     bar = make_progress_bar(pct)
     message_id = send_message(chat_id, f"{first_step}\n{bar}")
 
+    # Сохраняем ID последнего сообщения
+    last_messages[chat_id] = message_id
+
+    # Анимация
     for text, pct in steps[1:]:
         time.sleep(3)
         bar = make_progress_bar(pct)
+
         if pct == 100:
             success = round(random.uniform(85.0, 95.0), 1)
-            edit_message(chat_id, message_id, f"✅ Señal lista — probabilidad de éxito: {success}%")
+            edit_message(chat_id, message_id,
+                         f"✅ Señal lista — probabilidad de éxito: {success}%")
         else:
             edit_message(chat_id, message_id, f"{text}\n{bar}")
 
 
 # ================================
-# 🔰 Webhook
+# 🔰 Webhook для SendPulse
 # ================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -111,7 +144,9 @@ def webhook():
     print("CHAT ID DETECTADO:", chat_id)
 
     if chat_id:
-        threading.Thread(target=send_dynamic, args=(int(chat_id),), daemon=True).start()
+        threading.Thread(target=send_dynamic,
+                         args=(int(chat_id),),
+                         daemon=True).start()
         return jsonify({"ok": True}), 200
 
     return jsonify({"ok": False, "error": "chat_id not found"}), 400
