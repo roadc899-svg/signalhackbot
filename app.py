@@ -89,8 +89,8 @@ def send_dynamic_mines(chat_id):
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-        ("⚙️ Conectando al sistema 1xBet...", 10),
-        ("🔍 Analizando el patrón de minas...", 30),
+        ("⚙️ Conectando al sistema...", 10),
+        ("🔍 Analizando la ubicación de las minas...", 30),
         ("🧠 Calculando probabilidad...", 60),
         ("🛠️ Optimizando la señal...", 85),
         ("💣 Señal lista", 100)
@@ -120,11 +120,13 @@ def send_dynamic_chicken(chat_id):
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-        ("🐔 Escaneando el mapa...", 20),
-        ("🚗 Analizando rutas seguras...", 45),
-        ("🧠 Cálculo de zonas peligrosas...", 70),
-        ("🔥 Preparando la señal…", 90),
-        ("✅ Señal lista", 100)
+      ("⚙️ Conectando al sistema...", 20),
+      ("🐔 Escaneando el campo...", 40),
+      ("🧩 Analizando las celdas seguras...", 60),
+      ("🧠 Verificando probabilidades...", 80),
+      ("🔥 Preparando la señal…", 90),
+      ("✅ Señal lista", 100)
+
     ]
 
     first, pct = steps[0]
@@ -150,10 +152,11 @@ def send_dynamic_penalty(chat_id):
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-        ("⚽ Analizando portero...", 20),
-        ("🎯 Calculando trayectoria óptima...", 55),
-        ("🔥 Preparando disparo perfecto...", 85),
-        ("🏆 Señal lista", 100)
+       ("⚙️ Conectando al sistema...", 15),
+       ("⚽ Analizando al portero...", 35),
+       ("🎯 Calculando la trayectoria óptima...", 60),
+       ("🔥 Preparando el tiro perfecto...", 85),
+       ("🏆 Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -179,10 +182,11 @@ def send_dynamic_aviator(chat_id):
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-        ("✈️ Escaneando historial…", 15),
-        ("📊 Analizando volatilidad…", 40),
-        ("🧠 Predicción de X optimo…", 75),
-        ("🔥 Señal lista", 100)
+       ("⚙️ Conectando al sistema...", 15),
+       ("✈️ Escaneando los últimos coeficientes…", 35),
+       ("📊 Analizando el comportamiento del avión…", 60),
+       ("🧠 Predicción del coeficiente X óptimo…", 85),
+       ("🔥 Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -192,7 +196,7 @@ def send_dynamic_aviator(chat_id):
     for text, pct in steps[1:]:
         time.sleep(3)
         if pct == 100:
-            x = round(random.uniform(1.5, 3.8), 2)
+            x = round(random.uniform(1.2, 3.3), 2)
             edit_message(chat_id, msg_id, f"✈️ Señal lista — retírate en X{x} 🚀")
 
             # 🔥 удалить сигнал через 10 сек
