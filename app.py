@@ -206,6 +206,37 @@ def send_dynamic_aviator(chat_id):
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
 
+# ----- RABBIT ROAD -----
+def send_dynamic_rabbit(chat_id):
+
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+            ("⚙️ Conectando al sistema...", 15),
+            ("🥕 Escaneando los cultivos de zanahorias...", 35),
+            ("✋ Analizando la aparición de manos atrapadoras...", 60),
+            ("🧠 Calculando pasos seguros...", 85),
+            ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    for text, pct in steps[1:]:
+        time.sleep(2.5)
+        if pct == 100:
+            safe_steps = random.randint(3, 6)
+            edit_message(chat_id, msg_id, f"🐰 Señal lista — evita las manos atrapadoras, recoge la zanahoria y detente 🥕🔥")
+
+            # 🔥 удалить сигнал через 10 секунд
+            delete_after(chat_id, msg_id, 10)
+
+        else:
+            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}") 
+            
+
 # ================================
 # 🌐 WEBHOOK-и для каждой игры
 # ================================
@@ -245,6 +276,19 @@ def webhook_aviator():
     chat_id = extract_chat_id(data)
     if chat_id:
         threading.Thread(target=send_dynamic_aviator, args=(int(chat_id),), daemon=True).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
+@app.route("/webhook_rabbit", methods=["POST"])
+def webhook_rabbit():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_rabbit,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
