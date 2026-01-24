@@ -236,6 +236,44 @@ def send_dynamic_rabbit(chat_id):
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}") 
             
+# ----- BALLOONIX -----
+def send_dynamic_balloonix(chat_id):
+
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema BallooniX...", 15),
+        ("🎈 Analizando el inflado del globo...", 35),
+        ("📡 Escaneando patrones de explosión...", 60),
+        ("🧠 Calculando punto óptimo de salida...", 85),
+        ("🔥 Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    for text, pct in steps[1:]:
+        time.sleep(3)
+        if pct == 100:
+            x = round(random.uniform(1.3, 3.8), 2)
+            edit_message(
+                chat_id,
+                msg_id,
+                f"🎈 Señal BallooniX lista — retírate en X{x} 🚀"
+            )
+
+            # 🔥 авто-удаление через 10 сек
+            delete_after(chat_id, msg_id, 10)
+
+        else:
+            edit_message(
+                chat_id,
+                msg_id,
+                f"{text}\n{make_progress_bar(pct)}"
+            )
+
 
 # ================================
 # 🌐 WEBHOOK-и для каждой игры
@@ -292,6 +330,18 @@ def webhook_rabbit():
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
+@app.route("/webhook_balloonix", methods=["POST"])
+def webhook_balloonix():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_balloonix,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
 
 # ================================
 # 🏠 Home
