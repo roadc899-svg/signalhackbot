@@ -126,18 +126,23 @@ def send_dynamic_luckymines(chat_id):
 
     def run_steps():
         for text, pct in steps[1:]:
-            time.sleep(2)
+            time.sleep(2)  # пауза между шагами
             if pct == 100:
+                # Финальные параметры
                 success = round(random.uniform(90, 99), 1)
                 lucky_cells = 3
                 size = 5
                 total_cells = size * size
                 star_positions = random.sample(range(total_cells), lucky_cells)
 
-                # создаём поле из 🟦
+                # создаём поле из синих квадратов
                 field = ["🟦"] * total_cells
 
-                base_text = f"💎 <b>Señal Lucky lista</b>\n🎯 Éxito: {success}%\n⭐ Celdas afortunadas: {lucky_cells}\n\n"
+                base_text = (
+                    f"💎 <b>Señal Lucky lista</b>\n"
+                    f"🎯 Éxito: {success}%\n"
+                    f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
+                )
 
                 # функция для генерации текста поля
                 def field_text():
@@ -152,14 +157,14 @@ def send_dynamic_luckymines(chat_id):
                 def reveal_stars():
                     for pos in star_positions:
                         field[pos] = "⭐"
-                        updated_text = f"{base_text}{field_text()}\n\n⚠️ ¡Juega с suerte!"
+                        updated_text = f"{base_text}{field_text()}\n\n⚠️ ¡Juega con suerte!"
                         edit_message(chat_id, msg_id, updated_text)
-                        time.sleep(0.5)
+                        time.sleep(0.5)  # пауза между появлением каждой звезды
 
                 threading.Thread(target=reveal_stars, daemon=True).start()
 
                 # удалить сообщение через 25 секунд
-                delete_after(chat_id, msg_id, 25)
+                threading.Thread(target=delete_after, args=(chat_id, msg_id, 25), daemon=True).start()
 
             else:
                 edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
