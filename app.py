@@ -183,6 +183,44 @@ def send_dynamic_chicken(chat_id):
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
+                # Здесь можно добавить анимацию звёзд, если нужно
+                # threading.Thread(target=reveal_stars_animation, args=(chat_id, msg_id, size, star_positions, 0.5), daemon=True).start()
+                
+                delete_after(chat_id, msg_id, 25)
+            else:
+                edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    threading.Thread(target=run_steps, daemon=True).start()
+
+
+# ----- Остальные игры (Chicken, Penalty, Aviator, Rabbit, BallooniX) -----
+# Аналогично, как выше: прогресс + edit_message + delete_after
+# Пример для Chicken:
+def send_dynamic_chicken(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema...", 20),
+        ("🐔 Escaneando el campo...", 40),
+        ("🧩 Analizando las celdas seguras...", 60),
+        ("🧠 Verificando probabilidades...", 80),
+        ("🔥 Preparando la señal…", 90),
+        ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    for text, pct in steps[1:]:
+        time.sleep(2)
+        if pct == 100:
+            edit_message(chat_id, msg_id, "🐔 Señal lista — evita las zonas calientes 🔥")
+            delete_after(chat_id, msg_id, 10)
+        else:
+            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
 
 # ================================
 # 🌐 WEBHOOK-и для каждой игры
