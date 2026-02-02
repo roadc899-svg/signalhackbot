@@ -131,7 +131,7 @@ def send_dynamic_luckymines(chat_id):
         if pct == 100:
             # финальные параметры
             success = round(random.uniform(90, 99), 1)
-            lucky_cells = random.randint(4, 7)
+            lucky_cells = 3  # фиксируем только 3 звезды
             size = 5
             star_positions = random.sample(range(size * size), lucky_cells)
 
@@ -162,25 +162,6 @@ def send_dynamic_luckymines(chat_id):
             delete_after(chat_id, msg_id, 25)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
-
-
-# Анимация звезд для Lucky Mines (синее поле)
-def reveal_stars_animation(chat_id, message_id, size, star_positions, delay=0.5):
-    total = size * size
-    grid = ["🟦"] * total
-
-    for pos in star_positions:
-        time.sleep(delay)
-        grid[pos] = "⭐"
-
-        rows = []
-        for i in range(size):
-            row = grid[i*size:(i+1)*size]
-            rows.append(" ".join(row))
-
-        field_text = "\n".join(rows)
-        edit_message(chat_id, message_id, f"💎 <b>Señal Lucky lista</b>\n\n{field_text}")
-
 
 # ----- CHICKEN ROAD -----
 def send_dynamic_chicken(chat_id):
