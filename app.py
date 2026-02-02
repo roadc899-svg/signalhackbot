@@ -126,29 +126,41 @@ def send_dynamic_luckymines(chat_id):
 
     def run_steps():
         for text, pct in steps[1:]:
-            time.sleep(3)
+            time.sleep(2)
             if pct == 100:
                 success = round(random.uniform(90, 99), 1)
                 lucky_cells = 3
                 size = 5
-                star_positions = random.sample(range(size*size), lucky_cells)
-                empty_field = ["🟦"] * (size*size)
-                field_text = "\n".join(
-                    [" ".join(empty_field[i*size:(i+1)*size]) for i in range(size)]
-                )
-                final_text = (
-                    f"💎 <b>Señal Lucky lista</b>\n"
-                    f"🎯 Éxito: {success}%\n"
-                    f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
-                    f"{field_text}\n\n"
-                    f"⚠️ ¡Juega con suerte!"
-                )
-                edit_message(chat_id, msg_id, final_text)
+                total_cells = size * size
+                star_positions = random.sample(range(total_cells), lucky_cells)
 
-                # Здесь можно добавить анимацию звёзд, если нужно
-                # threading.Thread(target=reveal_stars_animation, args=(chat_id, msg_id, size, star_positions, 0.5), daemon=True).start()
-                
+                # создаём поле из 🟦
+                field = ["🟦"] * total_cells
+
+                base_text = f"💎 <b>Señal Lucky lista</b>\n🎯 Éxito: {success}%\n⭐ Celdas afortunadas: {lucky_cells}\n\n"
+
+                # функция для генерации текста поля
+                def field_text():
+                    return "\n".join(
+                        [" ".join(field[i*size:(i+1)*size]) for i in range(size)]
+                    )
+
+                # отправляем начальное сообщение с пустым полем
+                edit_message(chat_id, msg_id, f"{base_text}{field_text()}\n\n⚠️ ¡Juega con suerte!")
+
+                # анимация появления звезд
+                def reveal_stars():
+                    for pos in star_positions:
+                        field[pos] = "⭐"
+                        updated_text = f"{base_text}{field_text()}\n\n⚠️ ¡Juega с suerte!"
+                        edit_message(chat_id, msg_id, updated_text)
+                        time.sleep(0.5)
+
+                threading.Thread(target=reveal_stars, daemon=True).start()
+
+                # удалить сообщение через 25 секунд
                 delete_after(chat_id, msg_id, 25)
+
             else:
                 edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
