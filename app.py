@@ -162,14 +162,13 @@ def send_dynamic_luckymines(chat_id):
                         time.sleep(0.5)  # пауза между появлением каждой звезды
 
                 threading.Thread(target=reveal_stars, daemon=True).start()
-
-                # удалить сообщение через 25 секунд
                 threading.Thread(target=delete_after, args=(chat_id, msg_id, 25), daemon=True).start()
 
             else:
                 edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
     threading.Thread(target=run_steps, daemon=True).start()
+
 
 
 # ----- Остальные игры (Chicken, Penalty, Aviator, Rabbit, BallooniX) -----
