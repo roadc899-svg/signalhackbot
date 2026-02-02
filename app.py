@@ -128,44 +128,40 @@ def send_dynamic_mines(chat_id):
     for text, pct in steps[1:]:
         time.sleep(3)
         if pct == 100:
-    success = round(random.uniform(85, 95), 1)
-    safe_cells = random.randint(3, 6)
-    size = 5
-
-    # позиции звёзд
-    star_positions = random.sample(range(size * size), safe_cells)
-
-    # пустое поле
-    empty_field = generate_empty_field(size)
-    field_text = "\n".join(empty_field)
-
-    final_text = (
-        f"💣 <b>Señal lista</b>\n"
-        f"🎯 Éxito: {success}%\n"
-        f"⭐ Celdas seguras: {safe_cells}\n\n"
-        f"{field_text}\n\n"
-        f"⚠️ Juega con cuidado"
-    )
-
-    edit_message(chat_id, msg_id, final_text)
-
-    # 🔥 запуск анимации
-    threading.Thread(
-        target=reveal_stars_animation,
-        args=(chat_id, msg_id, size, star_positions),
-        daemon=True
-    ).start()
-
-    delete_after(chat_id, msg_id, 20)
-
             success = round(random.uniform(85, 95), 1)
-            edit_message(chat_id, msg_id, f"💣 Señal lista — éxito: {success}%")
+            safe_cells = random.randint(3, 6)
+            size = 5
 
-            # 🔥 удалить итоговое сообщение через 10 сек
-            delete_after(chat_id, msg_id, 10)
+            # позиции звёзд
+            star_positions = random.sample(range(size * size), safe_cells)
+
+            # пустое поле
+            empty_field = generate_empty_field(size)
+            field_text = "\n".join(empty_field)
+
+            final_text = (
+                f"💣 <b>Señal lista</b>\n"
+                f"🎯 Éxito: {success}%\n"
+                f"⭐ Celdas seguras: {safe_cells}\n\n"
+                f"{field_text}\n\n"
+                f"⚠️ Juega con cuidado"
+            )
+
+            edit_message(chat_id, msg_id, final_text)
+
+            # 🔥 запуск анимации
+            threading.Thread(
+                target=reveal_stars_animation,
+                args=(chat_id, msg_id, size, star_positions),
+                daemon=True
+            ).start()
+
+            # 🔥 удалить итоговое сообщение через 20 секунд
+            delete_after(chat_id, msg_id, 20)
 
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
 
 
 # ----- CHICKEN ROAD -----
