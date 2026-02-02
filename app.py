@@ -212,6 +212,65 @@ def send_dynamic_penalty(chat_id):
             delete_after(chat_id, msg_id, 10)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+            
+# ----- PENALTY V2 -----
+def send_dynamic_penalty_v2(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema Penalty...", 10),
+        ("🧤 Analizando al portero...", 30),
+        ("🎯 Calculando trayectoria del disparo...", 60),
+        ("🛠️ Optimizando señal...", 85),
+        ("⚽ Señal lista", 100)
+    ]
+
+    # первое сообщение
+    first_text, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first_text}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    # прогресс
+    for text, pct in steps[1:]:
+        time.sleep(3)
+        edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    # поле 3x5
+    rows = 3
+    cols = 5
+    balls = 3
+
+    total_cells = rows * cols
+    ball_positions = random.sample(range(total_cells), balls)
+    grid = ["🟦"] * total_cells
+
+    # анимация появления мячей
+    for pos in ball_positions:
+        time.sleep(0.6)
+        grid[pos] = "⚽"
+        field_text = "\n".join(
+            [" ".join(grid[i*cols:(i+1)*cols]) for i in range(rows)]
+        )
+        edit_message(
+            chat_id,
+            msg_id,
+            f"⚽ Generando señal Penalty...\n\n{field_text}"
+        )
+
+    success = round(random.uniform(90, 99), 1)
+
+    final_text = (
+        f"⚽ <b>SEÑAL PENALTY LISTA</b>\n"
+        f"🎯 Precisión: {success}%\n"
+        f"⚽ Balones favorables: {balls}\n\n"
+        f"{field_text}\n\n"
+        f"⚠️ Juega con cabeza"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+    delete_after(chat_id, msg_id, 25)
+
 
 # ----- AVIATOR -----
 def send_dynamic_aviator(chat_id):
@@ -326,6 +385,19 @@ def webhook_penalty():
     chat_id = extract_chat_id(data)
     if chat_id:
         threading.Thread(target=send_dynamic_penalty, args=(int(chat_id),), daemon=True).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
+@app.route("/webhook_penalty_v2", methods=["POST"])
+def webhook_penalty_v2():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_penalty_v2,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
