@@ -103,6 +103,7 @@ def reveal_stars_animation(chat_id, message_id, size, star_positions, delay=1.5)
 
 # ----- MINES -----
 def send_dynamic_mines(chat_id):
+
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
@@ -122,31 +123,14 @@ def send_dynamic_mines(chat_id):
         time.sleep(3)
         if pct == 100:
             success = round(random.uniform(85, 95), 1)
-            safe_cells = random.randint(3, 6)
-            size = 5
-            star_positions = random.sample(range(size * size), safe_cells)
-            empty_field = generate_empty_field(size)
-            field_text = "\n".join(empty_field)
+            edit_message(chat_id, msg_id, f"💣 Señal lista — éxito: {success}%")
 
-            final_text = (
-                f"💣 <b>Señal lista</b>\n"
-                f"🎯 Éxito: {success}%\n"
-                f"⭐ Celdas seguras: {safe_cells}\n\n"
-                f"{field_text}\n\n"
-                f"⚠️ Juega con cuidado"
-            )
+            # 🔥 удалить итоговое сообщение через 10 сек
+            delete_after(chat_id, msg_id, 10)
 
-            edit_message(chat_id, msg_id, final_text)
-
-            threading.Thread(
-                target=reveal_stars_animation,
-                args=(chat_id, msg_id, size, star_positions),
-                daemon=True
-            ).start()
-
-            delete_after(chat_id, msg_id, 20)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
 
 # ----- LUCKY MINES -----
 def send_dynamic_luckymines(chat_id):
