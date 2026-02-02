@@ -82,6 +82,31 @@ def delete_after(chat_id, message_id, delay):
 # 🔥 ДИНАМИЧЕСКИЕ СООБЩЕНИЯ ДЛЯ ИГР
 # ================================
 
+# ----- MINES ANIMATION HELPERS -----
+
+def generate_empty_field(size=5, tile="🟦"):
+    field = []
+    for _ in range(size):
+        field.append(" ".join([tile] * size))
+    return field
+
+
+def reveal_stars_animation(chat_id, message_id, size, star_positions, delay=1.5):
+    total = size * size
+    grid = ["🟦"] * total
+
+    for pos in star_positions:
+        time.sleep(delay)
+        grid[pos] = "⭐"
+
+        rows = []
+        for i in range(size):
+            row = grid[i*size:(i+1)*size]
+            rows.append(" ".join(row))
+
+        field_text = "\n".join(rows)
+        edit_message(chat_id, message_id, field_text)
+
 # ----- MINES -----
 def send_dynamic_mines(chat_id):
 
@@ -103,6 +128,36 @@ def send_dynamic_mines(chat_id):
     for text, pct in steps[1:]:
         time.sleep(3)
         if pct == 100:
+    success = round(random.uniform(85, 95), 1)
+    safe_cells = random.randint(3, 6)
+    size = 5
+
+    # позиции звёзд
+    star_positions = random.sample(range(size * size), safe_cells)
+
+    # пустое поле
+    empty_field = generate_empty_field(size)
+    field_text = "\n".join(empty_field)
+
+    final_text = (
+        f"💣 <b>Señal lista</b>\n"
+        f"🎯 Éxito: {success}%\n"
+        f"⭐ Celdas seguras: {safe_cells}\n\n"
+        f"{field_text}\n\n"
+        f"⚠️ Juega con cuidado"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+
+    # 🔥 запуск анимации
+    threading.Thread(
+        target=reveal_stars_animation,
+        args=(chat_id, msg_id, size, star_positions),
+        daemon=True
+    ).start()
+
+    delete_after(chat_id, msg_id, 20)
+
             success = round(random.uniform(85, 95), 1)
             edit_message(chat_id, msg_id, f"💣 Señal lista — éxito: {success}%")
 
@@ -337,6 +392,19 @@ def webhook_balloonix():
     if chat_id:
         threading.Thread(
             target=send_dynamic_balloonix,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
+@app.route("/webhook_luckymines", methods=["POST"])
+def webhook_luckymines():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_mines,
             args=(int(chat_id),),
             daemon=True
         ).start()
