@@ -15,7 +15,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 # Храним последние сообщения по каждому чату
 last_messages = {}    # { chat_id: message_id }
 
-
 # ================================
 # 🔰 Универсальный поиск chat_id
 # ================================
@@ -38,7 +37,6 @@ def extract_chat_id(payload):
                 return cid
 
     return None
-
 
 # ================================
 # 🔰 Telegram Helpers
@@ -67,7 +65,6 @@ def make_progress_bar(percent, length=20):
     empty = length - filled
     return f"[{'█' * filled}{'▒' * empty}] {percent}%"
 
-
 # ================================
 # 🗑 Функция авто-удаления финального сообщения
 # ================================
@@ -77,19 +74,16 @@ def delete_after(chat_id, message_id, delay):
         delete_message(chat_id, message_id)
     threading.Thread(target=worker, daemon=True).start()
 
-
 # ================================
 # 🔥 ДИНАМИЧЕСКИЕ СООБЩЕНИЯ ДЛЯ ИГР
 # ================================
 
 # ----- MINES ANIMATION HELPERS -----
-
 def generate_empty_field(size=5, tile="🟦"):
     field = []
     for _ in range(size):
         field.append(" ".join([tile] * size))
     return field
-
 
 def reveal_stars_animation(chat_id, message_id, size, star_positions, delay=1.5):
     total = size * size
@@ -109,7 +103,6 @@ def reveal_stars_animation(chat_id, message_id, size, star_positions, delay=1.5)
 
 # ----- MINES -----
 def send_dynamic_mines(chat_id):
-
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
@@ -131,11 +124,7 @@ def send_dynamic_mines(chat_id):
             success = round(random.uniform(85, 95), 1)
             safe_cells = random.randint(3, 6)
             size = 5
-
-            # позиции звёзд
             star_positions = random.sample(range(size * size), safe_cells)
-
-            # пустое поле
             empty_field = generate_empty_field(size)
             field_text = "\n".join(empty_field)
 
@@ -149,35 +138,75 @@ def send_dynamic_mines(chat_id):
 
             edit_message(chat_id, msg_id, final_text)
 
-            # 🔥 запуск анимации
             threading.Thread(
                 target=reveal_stars_animation,
                 args=(chat_id, msg_id, size, star_positions),
                 daemon=True
             ).start()
 
-            # 🔥 удалить итоговое сообщение через 20 секунд
             delete_after(chat_id, msg_id, 20)
-
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
-
-
-# ----- CHICKEN ROAD -----
-def send_dynamic_chicken(chat_id):
-
+# ----- LUCKY MINES -----
+def send_dynamic_luckymines(chat_id):
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-      ("⚙️ Conectando al sistema...", 20),
-      ("🐔 Escaneando el campo...", 40),
-      ("🧩 Analizando las celdas seguras...", 60),
-      ("🧠 Verificando probabilidades...", 80),
-      ("🔥 Preparando la señal…", 90),
-      ("✅ Señal lista", 100)
+        ("⚙️ Conectando al sistema Lucky...", 10),
+        ("🍀 Buscando minas afortunadas...", 35),
+        ("🧠 Calculando probabilidades especiales...", 65),
+        ("🛠️ Ajustando señal afortunada...", 85),
+        ("💎 Señal Lucky lista", 100)
+    ]
 
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    for text, pct in steps[1:]:
+        time.sleep(3)
+        if pct == 100:
+            success = round(random.uniform(90, 99), 1)
+            lucky_cells = random.randint(4, 7)
+            size = 5
+            star_positions = random.sample(range(size * size), lucky_cells)
+            empty_field = generate_empty_field(size, tile="🟩")
+            field_text = "\n".join(empty_field)
+
+            final_text = (
+                f"💎 <b>Señal Lucky lista</b>\n"
+                f"🎯 Éxito: {success}%\n"
+                f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
+                f"{field_text}\n\n"
+                f"⚠️ ¡Juega con suerte!"
+            )
+
+            edit_message(chat_id, msg_id, final_text)
+
+            threading.Thread(
+                target=reveal_stars_animation,
+                args=(chat_id, msg_id, size, star_positions),
+                daemon=True
+            ).start()
+
+            delete_after(chat_id, msg_id, 25)
+        else:
+            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+# ----- CHICKEN ROAD -----
+def send_dynamic_chicken(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema...", 20),
+        ("🐔 Escaneando el campo...", 40),
+        ("🧩 Analizando las celdas seguras...", 60),
+        ("🧠 Verificando probabilidades...", 80),
+        ("🔥 Preparando la señal…", 90),
+        ("✅ Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -188,26 +217,21 @@ def send_dynamic_chicken(chat_id):
         time.sleep(2)
         if pct == 100:
             edit_message(chat_id, msg_id, "🐔 Señal lista — evita las zonas calientes 🔥")
-
-            # 🔥 удалить через 10 секунд
             delete_after(chat_id, msg_id, 10)
-
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
-
 # ----- PENALTY -----
 def send_dynamic_penalty(chat_id):
-
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-       ("⚙️ Conectando al sistema...", 15),
-       ("⚽ Analizando al portero...", 35),
-       ("🎯 Calculando la trayectoria óptima...", 60),
-       ("🔥 Preparando el tiro perfecto...", 85),
-       ("🏆 Señal lista", 100)
+        ("⚙️ Conectando al sistema...", 15),
+        ("⚽ Analizando al portero...", 35),
+        ("🎯 Calculando la trayectoria óptima...", 60),
+        ("🔥 Preparando el tiro perfecto...", 85),
+        ("🏆 Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -218,26 +242,21 @@ def send_dynamic_penalty(chat_id):
         time.sleep(2.5)
         if pct == 100:
             edit_message(chat_id, msg_id, "⚽ Señal lista — ¡dispara y marca gol! 🏆")
-
-            # 🔥 удалить финальное через 10 сек
             delete_after(chat_id, msg_id, 10)
-
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
-
 # ----- AVIATOR -----
 def send_dynamic_aviator(chat_id):
-
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-       ("⚙️ Conectando al sistema...", 15),
-       ("✈️ Escaneando los últimos coeficientes…", 35),
-       ("📊 Analizando el comportamiento del avión…", 60),
-       ("🧠 Predicción del coeficiente X óptimo…", 85),
-       ("🔥 Señal lista", 100)
+        ("⚙️ Conectando al sistema...", 15),
+        ("✈️ Escaneando los últimos coeficientes…", 35),
+        ("📊 Analizando el comportamiento del avión…", 60),
+        ("🧠 Predicción del coeficiente X óptimo…", 85),
+        ("🔥 Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -249,26 +268,21 @@ def send_dynamic_aviator(chat_id):
         if pct == 100:
             x = round(random.uniform(1.2, 3.3), 2)
             edit_message(chat_id, msg_id, f"✈️ Señal lista — retírate en X{x} 🚀")
-
-            # 🔥 удалить сигнал через 10 сек
             delete_after(chat_id, msg_id, 10)
-
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
-
 # ----- RABBIT ROAD -----
 def send_dynamic_rabbit(chat_id):
-
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
     steps = [
-            ("⚙️ Conectando al sistema...", 15),
-            ("🥕 Escaneando los cultivos de zanahorias...", 35),
-            ("✋ Analizando la aparición de manos atrapadoras...", 60),
-            ("🧠 Calculando pasos seguros...", 85),
-            ("✅ Señal lista", 100)
+        ("⚙️ Conectando al sistema...", 15),
+        ("🥕 Escaneando los cultivos de zanahorias...", 35),
+        ("✋ Analizando la aparición de manos atrapadoras...", 60),
+        ("🧠 Calculando pasos seguros...", 85),
+        ("✅ Señal lista", 100)
     ]
 
     first, pct = steps[0]
@@ -278,18 +292,13 @@ def send_dynamic_rabbit(chat_id):
     for text, pct in steps[1:]:
         time.sleep(2.5)
         if pct == 100:
-            safe_steps = random.randint(3, 6)
-            edit_message(chat_id, msg_id, f"🐰 Señal lista — evita las manos atrapadoras, recoge la zanahoria y detente 🥕🔥")
-
-            # 🔥 удалить сигнал через 10 секунд
+            edit_message(chat_id, msg_id, "🐰 Señal lista — evita las manos atrapadoras, recoge la zanahoria y detente 🥕🔥")
             delete_after(chat_id, msg_id, 10)
-
         else:
-            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}") 
-            
+            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
 # ----- BALLOONIX -----
 def send_dynamic_balloonix(chat_id):
-
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
@@ -309,22 +318,10 @@ def send_dynamic_balloonix(chat_id):
         time.sleep(3)
         if pct == 100:
             x = round(random.uniform(1.3, 3.8), 2)
-            edit_message(
-                chat_id,
-                msg_id,
-                f"🎈 Señal BallooniX lista — retírate en X{x} 🚀"
-            )
-
-            # 🔥 авто-удаление через 10 сек
+            edit_message(chat_id, msg_id, f"🎈 Señal BallooniX lista — retírate en X{x} 🚀")
             delete_after(chat_id, msg_id, 10)
-
         else:
-            edit_message(
-                chat_id,
-                msg_id,
-                f"{text}\n{make_progress_bar(pct)}"
-            )
-
+            edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
 # ================================
 # 🌐 WEBHOOK-и для каждой игры
@@ -338,6 +335,14 @@ def webhook_mines():
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
+@app.route("/webhook_luckymines", methods=["POST"])
+def webhook_luckymines():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(target=send_dynamic_luckymines, args=(int(chat_id),), daemon=True).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
 
 @app.route("/webhook_chicken", methods=["POST"])
 def webhook_chicken():
@@ -348,7 +353,6 @@ def webhook_chicken():
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
-
 @app.route("/webhook_penalty", methods=["POST"])
 def webhook_penalty():
     data = request.get_json(force=True)
@@ -357,7 +361,6 @@ def webhook_penalty():
         threading.Thread(target=send_dynamic_penalty, args=(int(chat_id),), daemon=True).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
-
 
 @app.route("/webhook_aviator", methods=["POST"])
 def webhook_aviator():
@@ -373,11 +376,7 @@ def webhook_rabbit():
     data = request.get_json(force=True)
     chat_id = extract_chat_id(data)
     if chat_id:
-        threading.Thread(
-            target=send_dynamic_rabbit,
-            args=(int(chat_id),),
-            daemon=True
-        ).start()
+        threading.Thread(target=send_dynamic_rabbit, args=(int(chat_id),), daemon=True).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
@@ -386,24 +385,7 @@ def webhook_balloonix():
     data = request.get_json(force=True)
     chat_id = extract_chat_id(data)
     if chat_id:
-        threading.Thread(
-            target=send_dynamic_balloonix,
-            args=(int(chat_id),),
-            daemon=True
-        ).start()
-        return jsonify(ok=True)
-    return jsonify(error="chat_id not found"), 400
-
-@app.route("/webhook_luckymines", methods=["POST"])
-def webhook_luckymines():
-    data = request.get_json(force=True)
-    chat_id = extract_chat_id(data)
-    if chat_id:
-        threading.Thread(
-            target=send_dynamic_mines,
-            args=(int(chat_id),),
-            daemon=True
-        ).start()
+        threading.Thread(target=send_dynamic_balloonix, args=(int(chat_id),), daemon=True).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
@@ -413,7 +395,6 @@ def webhook_luckymines():
 @app.route("/")
 def home():
     return "HackBot is running", 200
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
