@@ -188,6 +188,48 @@ def send_dynamic_chicken(chat_id):
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
+# ----- CHICKEN ROAD V2 (señal dinámica por pasos) -----
+def send_dynamic_chicken_v2(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema Chicken Road...", 20),
+        ("🐔 Escaneando el campo de juego...", 40),
+        ("🧩 Analizando las celdas seguras...", 60),
+        ("📊 Evaluando multiplicadores...", 75),
+        ("🧠 Calculando el punto óptimo de salida...", 90),
+        ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    # progreso
+    for text, pct in steps[1:]:
+        time.sleep(2.5)
+        edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    # 🎯 LÓGICA Chicken Road
+    safe_steps = random.randint(3, 6)          # cuántos pasos avanzar
+    stop_x = round(random.uniform(1.18, 1.40), 2)
+    success = round(random.uniform(87, 95), 1)
+
+    final_text = (
+        f"🐔 <b>SEÑAL CHICKEN ROAD</b>\n\n"
+        f"🟩 Pasos seguros: <b>{safe_steps}</b>\n"
+        f"📍 Salida recomendada: <b>X{stop_x}</b>\n"
+        f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
+        f"⚠️ No arriesgues después de salir\n"
+        f"🔥 Retira y comienza una nueva ronda"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+
+    # auto eliminación
+    delete_after(chat_id, msg_id, 20)
+
 # ----- PENALTY -----
 def send_dynamic_penalty(chat_id):
     if chat_id in last_messages:
@@ -322,6 +364,48 @@ def send_dynamic_rabbit(chat_id):
             delete_after(chat_id, msg_id, 10)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+            
+# ----- RABBIT ROAD V2 (динамический шаговый сигнал) -----
+def send_dynamic_rabbit_v2(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema Rabbit Road...", 15),
+        ("🥕 Escaneando las rutas del conejo...", 35),
+        ("✋ Detectando manos atrapadoras...", 55),
+        ("📊 Analizando multiplicadores seguros...", 75),
+        ("🧠 Calculando punto óptimo de salida...", 90),
+        ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    for text, pct in steps[1:]:
+        time.sleep(2.5)
+        edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    # 🎯 ЛОГИКА Rabbit Road
+    safe_steps = random.randint(3, 6)        # сколько дорожек пройти
+    stop_x = round(random.uniform(1.15, 1.35), 2)
+    success = round(random.uniform(88, 96), 1)
+
+    final_text = (
+        f"🐰 <b>SEÑAL RABBIT ROAD</b>\n\n"
+        f"🥕 Pasos seguros: <b>{safe_steps}</b>\n"
+        f"📍 Salida recomendada: <b>X{stop_x}</b>\n"
+        f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
+        f"⚠️ No fuerces después de la salida\n"
+        f"🔥 Mejor retirar y reiniciar"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+
+    # автоудаление через 20 сек
+    delete_after(chat_id, msg_id, 20)
+
 
 # ----- BALLOONIX -----
 def send_dynamic_balloonix(chat_id):
@@ -425,6 +509,32 @@ def webhook_balloonix():
     chat_id = extract_chat_id(data)
     if chat_id:
         threading.Thread(target=send_dynamic_balloonix, args=(int(chat_id),), daemon=True).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
+@app.route("/webhook_rabbit_v2", methods=["POST"])
+def webhook_rabbit_v2():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_rabbit_v2,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
+@app.route("/webhook_chicken_v2", methods=["POST"])
+def webhook_chicken_v2():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_chicken_v2,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
