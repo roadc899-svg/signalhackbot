@@ -319,8 +319,7 @@ for pos in ball_positions:
         f"🎯 Precisión: {success}%\n"
         f"⚽ Balones favorables: {balls}\n\n"
         f"{field_text}\n\n"
-        f"⚠️ No persigas multiplicadores altos
-          🔥 Retira y espera la próxima ronda"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
