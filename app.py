@@ -150,7 +150,7 @@ def send_dynamic_luckymines(chat_id):
     # Финальное сообщение с шансом успеха
     success = round(random.uniform(90, 99), 1)
     final_text = (
-        f"💣 <b>Señal Lucky Mines</b>\n"
+        f"💣 <b>SEÑAL LUCKY MINES</b>\n"
         f"🎯 Éxito: {success}%\n"
         f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
         f"{field_text}\n\n"
