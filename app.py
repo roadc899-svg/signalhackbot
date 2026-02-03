@@ -371,7 +371,7 @@ def send_dynamic_aviator_v2(chat_id):
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
     # 🎯 LÓGICA AVIATOR
-    stop_x = round(random.uniform(1.30, 2.40), 2)
+    stop_x = round(random.uniform(1.30, 1.98), 2)
     success = round(random.uniform(88, 96), 1)
 
     final_text = (
@@ -426,32 +426,46 @@ def send_dynamic_rabbit_v2(chat_id):
         ("✅ Señal lista", 100)
     ]
 
+    # Отправка первого шага прогресса
     first, pct = steps[0]
     msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
     last_messages[chat_id] = msg_id
 
+    # Обновление прогресса
     for text, pct in steps[1:]:
         time.sleep(2.5)
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
     # 🎯 ЛОГИКА Rabbit Road
-    safe_steps = random.randint(3, 6)        # сколько дорожек пройти
-    stop_x = round(random.uniform(1.15, 1.35), 2)
-    success = round(random.uniform(88, 96), 1)
+    # Рандомное количество безопасных шагов
+    safe_steps = random.randint(1, 5)
 
+    # Соответствие шагов и коэффициентов
+    stop_x_table = {
+        1: 1.08,
+        2: 1.21,
+        3: 1.37,
+        4: 1.56,
+        5: 1.78
+    }
+    stop_x = stop_x_table[safe_steps]  # выбираем коэффициент по шагу
+    success = round(random.uniform(88, 96), 1)  # точность сигнала
+
+    # Финальное сообщение
     final_text = (
         f"🐰 <b>SEÑAL RABBIT ROAD</b>\n\n"
+        f"🎮 Modo: <b>Medio</b>\n"
         f"🥕 Pasos seguros: <b>{safe_steps}</b>\n"
-        f"📍 Salida recomendada: <b>X{stop_x}</b>\n"
+        f"📍 Coeficiente: <b>X{stop_x}</b>\n"
         f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
-        f"⚠️ No fuerces después de la salida\n"
-        f"🔥 Mejor retirar y reiniciar"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
 
     # автоудаление через 20 сек
     delete_after(chat_id, msg_id, 20)
+
 
 
 # ----- BALLOONIX -----
@@ -474,7 +488,7 @@ def send_dynamic_balloonix(chat_id):
     for text, pct in steps[1:]:
         time.sleep(3)
         if pct == 100:
-            x = round(random.uniform(1.3, 3.8), 2)
+            x = round(random.uniform(1.3, 1.98), 2)
             edit_message(chat_id, msg_id, f"🎈 Señal BallooniX lista — retírate en X{x} 🚀")
             delete_after(chat_id, msg_id, 10)
         else:
@@ -511,8 +525,7 @@ def send_dynamic_balloonix_v2(chat_id):
         f"🎈 <b>SEÑAL BALLOONIX</b>\n\n"
         f"📍 Retiro recomendado: <b>X{stop_x}</b>\n"
         f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
-        f"⚠️ No esperes demasiado para retirar\n"
-        f"🔥 Retira antes de la explosión y comienza de nuevo"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
