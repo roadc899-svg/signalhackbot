@@ -154,8 +154,7 @@ def send_dynamic_luckymines(chat_id):
         f"🎯 Éxito: {success}%\n"
         f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
         f"{field_text}\n\n"
-        f"⚠️ No persigas multiplicadores altos
-          🔥 Retira y espera la próxima ronda"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
     edit_message(chat_id, msg_id, final_text)
 
@@ -385,8 +384,7 @@ def send_dynamic_aviator_v2(chat_id):
         f"✈️ <b>SEÑAL AVIATOR</b>\n\n"
         f"📍 Retiro recomendado: <b>X{stop_x}</b>\n"
         f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
-        f"⚠️ No persigas multiplicadores altos\n"
-        f"🔥 Retira y espera la próxima ronda"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
