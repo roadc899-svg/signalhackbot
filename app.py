@@ -134,7 +134,7 @@ def send_dynamic_luckymines(chat_id):
 
     # Настройки поля
     size = 5
-    lucky_cells = 3  # только 3 звезды
+    lucky_cells = random.choice([2, 3])  # случайно 2 или 3 звезды
     star_positions = random.sample(range(size * size), lucky_cells)
     grid = ["🟦"] * (size * size)
 
@@ -145,16 +145,17 @@ def send_dynamic_luckymines(chat_id):
         field_text = "\n".join(
             [" ".join(grid[i*size:(i+1)*size]) for i in range(size)]
         )
-        edit_message(chat_id, msg_id, f"💎 Generando Lucky Mines...\n\n{field_text}")
+        edit_message(chat_id, msg_id, f"💣 Generando Lucky Mines...\n\n{field_text}")
 
     # Финальное сообщение с шансом успеха
     success = round(random.uniform(90, 99), 1)
     final_text = (
-        f"💎 <b>Señal Lucky lista</b>\n"
+        f"💣 <b>Señal Lucky Mines lista</b>\n"
         f"🎯 Éxito: {success}%\n"
         f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
         f"{field_text}\n\n"
-        f"⚠️ ¡Juega con suerte!"
+        f"⚠️ No persigas multiplicadores altos
+          🔥 Retira y espera la próxima ronda"
     )
     edit_message(chat_id, msg_id, final_text)
 
@@ -193,6 +194,7 @@ def send_dynamic_chicken_v2(chat_id):
     if chat_id in last_messages:
         delete_message(chat_id, last_messages[chat_id])
 
+    # Этапы прогресса
     steps = [
         ("⚙️ Conectando al sistema Chicken Road...", 20),
         ("🐔 Escaneando el campo de juego...", 40),
@@ -202,32 +204,44 @@ def send_dynamic_chicken_v2(chat_id):
         ("✅ Señal lista", 100)
     ]
 
+    # Отправляем первое сообщение с прогресс-баром
     first, pct = steps[0]
     msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
     last_messages[chat_id] = msg_id
 
-    # progreso
+    # Обновляем прогресс шаг за шагом
     for text, pct in steps[1:]:
         time.sleep(2.5)
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
-    # 🎯 LÓGICA Chicken Road
-    safe_steps = random.randint(3, 6)          # cuántos pasos avanzar
-    stop_x = round(random.uniform(1.18, 1.40), 2)
-    success = round(random.uniform(87, 95), 1)
+    # 🎯 ЛОГИКА Chicken Road
+    safe_steps = random.randint(1, 5)  # количество безопасных шагов от 1 до 5
 
+    # соответствие шагов и коэффициентов
+    stop_x_table = {
+        1: 1.12,
+        2: 1.28,
+        3: 1.47,
+        4: 1.70,
+        5: 1.98
+    }
+
+    stop_x = stop_x_table[safe_steps]  # выбираем коэффициент по шагу
+    success = round(random.uniform(87, 95), 1)  # точность сигнала
+
+    # Финальное сообщение
     final_text = (
         f"🐔 <b>SEÑAL CHICKEN ROAD</b>\n\n"
+        f"🎮 Modo: <b>Medio</b>\n"
         f"🟩 Pasos seguros: <b>{safe_steps}</b>\n"
-        f"📍 Salida recomendada: <b>X{stop_x}</b>\n"
+        f"📍 Coeficiente: <b>X{stop_x}</b>\n"
         f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
-        f"⚠️ No arriesgues después de salir\n"
-        f"🔥 Retira y comienza una nueva ronda"
+        f"⚠️ No persigas multiplicadores altos\n🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
 
-    # auto eliminación
+    # Автоудаление через 20 секунд
     delete_after(chat_id, msg_id, 20)
 
 # ----- PENALTY -----
@@ -277,28 +291,27 @@ def send_dynamic_penalty_v2(chat_id):
     for text, pct in steps[1:]:
         time.sleep(3)
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+# поле 3x5
+rows = 3
+cols = 5
+balls = random.randint(1, 2)  # рандомно 1 или 2 мяча
 
-    # поле 3x5
-    rows = 3
-    cols = 5
-    balls = 3
+total_cells = rows * cols
+ball_positions = random.sample(range(total_cells), balls)
+grid = ["🟦"] * total_cells
 
-    total_cells = rows * cols
-    ball_positions = random.sample(range(total_cells), balls)
-    grid = ["🟦"] * total_cells
-
-    # анимация появления мячей
-    for pos in ball_positions:
-        time.sleep(0.6)
-        grid[pos] = "⚽"
-        field_text = "\n".join(
-            [" ".join(grid[i*cols:(i+1)*cols]) for i in range(rows)]
-        )
-        edit_message(
-            chat_id,
-            msg_id,
-            f"⚽ Generando señal Penalty...\n\n{field_text}"
-        )
+# анимация появления мячей
+for pos in ball_positions:
+    time.sleep(0.6)
+    grid[pos] = "⚽"
+    field_text = "\n".join(
+        [" ".join(grid[i*cols:(i+1)*cols]) for i in range(rows)]
+    )
+    edit_message(
+        chat_id,
+        msg_id,
+        f"⚽ Generando señal Penalty...\n\n{field_text}"
+    )
 
     success = round(random.uniform(90, 99), 1)
 
@@ -307,7 +320,8 @@ def send_dynamic_penalty_v2(chat_id):
         f"🎯 Precisión: {success}%\n"
         f"⚽ Balones favorables: {balls}\n\n"
         f"{field_text}\n\n"
-        f"⚠️ Juega con cabeza"
+        f"⚠️ No persigas multiplicadores altos
+          🔥 Retira y espera la próxima ronda"
     )
 
     edit_message(chat_id, msg_id, final_text)
