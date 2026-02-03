@@ -150,7 +150,7 @@ def send_dynamic_luckymines(chat_id):
     # Финальное сообщение с шансом успеха
     success = round(random.uniform(90, 99), 1)
     final_text = (
-        f"💣 <b>Señal Lucky Mines lista</b>\n"
+        f"💣 <b>Señal Lucky Mines</b>\n"
         f"🎯 Éxito: {success}%\n"
         f"⭐ Celdas afortunadas: {lucky_cells}\n\n"
         f"{field_text}\n\n"
@@ -310,7 +310,7 @@ def send_dynamic_penalty_v2(chat_id):
 
     success = round(random.uniform(90, 99), 1)
     final_text = (
-        f"⚽ <b>SEÑAL PENALTY LISTA</b>\n"
+        f"⚽ <b>SEÑAL PENALTY</b>\n"
         f"🎯 Precisión: {success}%\n"
         f"⚽ Balones favorables: {balls}\n\n"
         f"{field_text}\n\n"
@@ -371,7 +371,7 @@ def send_dynamic_aviator_v2(chat_id):
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
     # 🎯 LÓGICA AVIATOR
-    stop_x = round(random.uniform(1.30, 1.98), 2)
+    stop_x = round(random.uniform(1.20, 1.98), 2)
     success = round(random.uniform(88, 96), 1)
 
     final_text = (
@@ -518,7 +518,7 @@ def send_dynamic_balloonix_v2(chat_id):
         edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
 
     # 🎯 LÓGICA BallooniX
-    stop_x = round(random.uniform(1.35, 3.20), 2)
+    stop_x = round(random.uniform(1.2, 1.98), 2)
     success = round(random.uniform(88, 97), 1)
 
     final_text = (
