@@ -339,6 +339,47 @@ def send_dynamic_aviator(chat_id):
             delete_after(chat_id, msg_id, 10)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+            
+# ----- AVIATOR V2 (señal dinámica con salida X) -----
+def send_dynamic_aviator_v2(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema Aviator...", 15),
+        ("✈️ Escaneando vuelos recientes...", 35),
+        ("📊 Analizando patrones de coeficientes...", 55),
+        ("🧠 Calculando punto óptimo de salida...", 75),
+        ("🔥 Optimizando señal...", 90),
+        ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    # progreso
+    for text, pct in steps[1:]:
+        time.sleep(2.5)
+        edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    # 🎯 LÓGICA AVIATOR
+    stop_x = round(random.uniform(1.30, 2.40), 2)
+    success = round(random.uniform(88, 96), 1)
+
+    final_text = (
+        f"✈️ <b>SEÑAL AVIATOR</b>\n\n"
+        f"📍 Retiro recomendado: <b>X{stop_x}</b>\n"
+        f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
+        f"⚠️ No persigas multiplicadores altos\n"
+        f"🔥 Retira y espera la próxima ronda"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+
+    # auto eliminación
+    delete_after(chat_id, msg_id, 20)
+
 
 # ----- RABBIT ROAD -----
 def send_dynamic_rabbit(chat_id):
@@ -432,6 +473,47 @@ def send_dynamic_balloonix(chat_id):
             delete_after(chat_id, msg_id, 10)
         else:
             edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+            
+# ----- BALLOONIX V2 (señal dinámica con salida X) -----
+def send_dynamic_balloonix_v2(chat_id):
+    if chat_id in last_messages:
+        delete_message(chat_id, last_messages[chat_id])
+
+    steps = [
+        ("⚙️ Conectando al sistema BallooniX...", 15),
+        ("🎈 Analizando el inflado del globo...", 35),
+        ("📡 Escaneando patrones de explosión...", 55),
+        ("🧠 Calculando punto óptimo de salida...", 75),
+        ("🔥 Optimizando señal...", 90),
+        ("✅ Señal lista", 100)
+    ]
+
+    first, pct = steps[0]
+    msg_id = send_message(chat_id, f"{first}\n{make_progress_bar(pct)}")
+    last_messages[chat_id] = msg_id
+
+    # progreso
+    for text, pct in steps[1:]:
+        time.sleep(2.5)
+        edit_message(chat_id, msg_id, f"{text}\n{make_progress_bar(pct)}")
+
+    # 🎯 LÓGICA BallooniX
+    stop_x = round(random.uniform(1.35, 3.20), 2)
+    success = round(random.uniform(88, 97), 1)
+
+    final_text = (
+        f"🎈 <b>SEÑAL BALLOONIX</b>\n\n"
+        f"📍 Retiro recomendado: <b>X{stop_x}</b>\n"
+        f"🎯 Precisión estimada: <b>{success}%</b>\n\n"
+        f"⚠️ No esperes demasiado para retirar\n"
+        f"🔥 Retira antes de la explosión y comienza de nuevo"
+    )
+
+    edit_message(chat_id, msg_id, final_text)
+
+    # auto eliminación
+    delete_after(chat_id, msg_id, 20)
+
 
 # ================================
 # 🌐 WEBHOOK-и для каждой игры
@@ -445,7 +527,7 @@ def webhook_mines():
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
-@app.route("/webhook_luckymines", methods=["POST"])
+@app.route("/webhook_mines_v2", methods=["POST"])
 def webhook_luckymines():
     data = request.get_json(force=True)
     chat_id = extract_chat_id(data)
@@ -494,6 +576,19 @@ def webhook_aviator():
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
 
+@app.route("/webhook_aviator_v2", methods=["POST"])
+def webhook_aviator_v2():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_aviator_v2,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
 @app.route("/webhook_rabbit", methods=["POST"])
 def webhook_rabbit():
     data = request.get_json(force=True)
@@ -537,6 +632,20 @@ def webhook_chicken_v2():
         ).start()
         return jsonify(ok=True)
     return jsonify(error="chat_id not found"), 400
+    
+@app.route("/webhook_balloonix_v2", methods=["POST"])
+def webhook_balloonix_v2():
+    data = request.get_json(force=True)
+    chat_id = extract_chat_id(data)
+    if chat_id:
+        threading.Thread(
+            target=send_dynamic_balloonix_v2,
+            args=(int(chat_id),),
+            daemon=True
+        ).start()
+        return jsonify(ok=True)
+    return jsonify(error="chat_id not found"), 400
+
 
 # ================================
 # 🏠 Home
